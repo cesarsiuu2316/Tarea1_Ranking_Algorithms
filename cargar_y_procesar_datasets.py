@@ -53,7 +53,6 @@ def generar_dataset_pairwise(X, y, qids):
 
     return np.array(X_pairs), np.array(y_pairs), np.array(qids_pairs)
 
-
 def cargar_estandarizar_y_guardar_datasets():
     # Crear directorios si no existen
     os.makedirs('datos_procesados/train', exist_ok=True)

@@ -1,5 +1,6 @@
 from sklearn.linear_model import LinearRegression
 import joblib
+from sklearn import svm
 import numpy as np
 import os
 
@@ -17,7 +18,7 @@ def cargar_datos_vali_originales():
     return vali_data_X, vali_data_y, vali_data_qids
 
 def cargar_datos_train_pairwise():
-    train_data_X = joblib.load('datos_procesados/train_paiwise/train_pairwise_X.pkl')
+    train_data_X = joblib.load('datos_procesados/train_pairwise/train_pairwise_X.pkl')
     train_data_y = joblib.load('datos_procesados/train_pairwise/train_pairwise_y.pkl')
     return train_data_X, train_data_y
 
@@ -36,9 +37,17 @@ def crear_pointwise_model(train_data_X, train_data_y):
     model.fit(train_data_X, train_data_y)
     joblib.dump(model, 'modelos/modelo_pointwise.pkl')
 
-def pairwise_model(train_data_X, train_data_y):
+def crear_pairwise_model(train_data_X, train_data_y):
+    # Entrena un modelo SVM lineal con los datos de entrenamiento (pares)
+    os.makedirs('modelos', exist_ok=True)
+    model = svm.SVC(kernel='linear')
+    model.fit(train_data_X, train_data_y)
+    joblib.dump(model, 'modelos/modelo_pairwise.pkl')
+    
+def pairwise_model():
     #revisar pares de documentos del mismo query
-    return
+    x_train, y_train = cargar_datos_train_pairwise()
+    crear_pairwise_model(x_train, y_train)
 
 def listwise_model(train_data_X, train_data_y):
     #revisar todos los documentos del mismo query
@@ -50,6 +59,7 @@ def listwise_model(train_data_X, train_data_y):
 # FUNCIONES PARA ORDENAMIENTO DE DATOS
 
 def main():
+    pairwise_model()
     return
     # Ordenar datos
 
