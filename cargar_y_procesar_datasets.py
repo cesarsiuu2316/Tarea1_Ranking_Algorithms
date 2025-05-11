@@ -40,7 +40,7 @@ def generar_dataset_pairwise(X, y, qids):
                 idx_i, idx_j = indices[i], indices[j] # Obtener los índices de los documentos, el documento i y todos los documentos j posteriores
                 rel_i, rel_j = y[idx_i], y[idx_j] # Obtener los puntajes de relevancia de los documentos
 
-                if rel_i == rel_j:
+                if rel_i == rel_j: # Si los puntajes de relevancia son iguales, no se agregan porque no aportan información adicional
                     continue
 
                 diff = X[idx_i] - X[idx_j] # Calcular la diferencia entre los vectores de características
