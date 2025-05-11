@@ -27,18 +27,20 @@ def generar_dataset_pairwise(X, y, qids):
     y_pairs = []
     qids_pairs = []  # Para almacenar los qids de los pares de documentos
     query_to_indices = defaultdict(list) # Crea una lista vacía para cada qid agregado
+    MAX_DOCS_PER_QUERY = 30
 
     # Agrupar documentos por query
     for idx, qid in enumerate(qids): # Iterar sobre los índices y qids
         query_to_indices[qid].append(idx) # Almacenar el índice del documento en la lista correspondiente al qid
 
     for qid, indices in query_to_indices.items(): # Iterar sobre los qids y sus índices
+        indices = indices[:MAX_DOCS_PER_QUERY]
         for i in range(len(indices)): # Iterar sobre los índices de los documentos
             for j in range(i + 1, len(indices)): # Comparar cada par de documentos
                 idx_i, idx_j = indices[i], indices[j] # Obtener los índices de los documentos, el documento i y todos los documentos j posteriores
                 rel_i, rel_j = y[idx_i], y[idx_j] # Obtener los puntajes de relevancia de los documentos
 
-                if rel_i == rel_j:
+                if rel_i == rel_j: # Si los puntajes de relevancia son iguales, no se agregan porque no aportan información adicional
                     continue
 
                 diff = X[idx_i] - X[idx_j] # Calcular la diferencia entre los vectores de características
@@ -47,11 +49,6 @@ def generar_dataset_pairwise(X, y, qids):
                 # Agregar los pares y sus qids correspondientes
                 X_pairs.append(diff)
                 y_pairs.append(label)
-                qids_pairs.append(qid)
-
-                # Inverso para balancear
-                X_pairs.append(-diff)
-                y_pairs.append(1 - label)
                 qids_pairs.append(qid)
 
     return np.array(X_pairs), np.array(y_pairs), np.array(qids_pairs)
