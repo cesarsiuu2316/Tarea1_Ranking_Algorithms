@@ -1,66 +1,84 @@
-import sys
 from sklearn.linear_model import LinearRegression
 import joblib
+from sklearn import svm
 import numpy as np
+import os
 
-def limpiar_dividir_datasets(path):
-    X = [] # Features
-    y = [] # relevance labels
-    qids = [] # Query IDs
-    with open(path, 'r') as f:
-        for line in f:
-            parts = line.strip().split() # Delete leading and trailing whitespace and split by whitespace
-            y.append(int(parts[0])) # Parse relevance label
-            qid = int(parts[1].split(':')[1]) # Parse query ID and get rid of the 'qid:' prefix
-            qids.append(qid)
-            features = []
-            for x in parts[2:]:
-                feature = float(x.split(':')[1]) # Parse each feature and get only the value
-                features.append(feature) # Append the feature value to the list
-            X.append(features) 
-    return np.array(X), np.array(y), np.array(qids)
+# FUNCIONES PARA CARGAR DATASETS PREPROCESADOS
 
-def cargar_guardar_datasets():
-    # Cargar, limpiar y divdidir los datos
-    test_data_X, test_data_y, test_data_qids = limpiar_dividir_datasets("Datos_Fold_1/test.txt")
-    train_data_X, train_data_y, train_data_qids = limpiar_dividir_datasets("Datos_Fold_1/train.txt")
-    vali_data_X, vali_data_y, vali_data_qids = limpiar_dividir_datasets("Datos_Fold_1/vali.txt")
+def cargar_datos_train_originales():
+    train_data_X = joblib.load('datos_procesados/train/train_data_X.pkl')
+    train_data_y = joblib.load('datos_procesados/train/train_data_y.pkl')
+    train_data_qids = joblib.load('datos_procesados/train/train_data_qids.pkl')
+    return train_data_X, train_data_y, train_data_qids
 
-    # Guardar los datos de entrenamiento
-    joblib.dump(train_data_X, 'datos_procesados/train/train_data_X.pkl')
-    joblib.dump(train_data_y, 'datos_procesados/train/train_data_y.pkl')
-    joblib.dump(train_data_qids, 'datos_procesados/train/train_data_qids.pkl')
-    # Guardar los datos de prueba
-    joblib.dump(test_data_X, 'datos_procesados/test/test_data_X.pkl')
-    joblib.dump(test_data_y, 'datos_procesados/test/test_data_y.pkl')
-    joblib.dump(test_data_qids, 'datos_procesados/test/test_data_qids.pkl')
-    # Guardar los datos de entrenamiento
-    joblib.dump(vali_data_X, 'datos_procesados/vali/vali_data_X.pkl')
-    joblib.dump(vali_data_y, 'datos_procesados/vali/vali_data_y.pkl')         
-    joblib.dump(vali_data_qids, 'datos_procesados/vali/vali_data_qids.pkl')
+def cargar_datos_vali_originales():
+    vali_data_X = joblib.load('datos_procesados/vali/vali_data_X.pkl')
+    vali_data_y = joblib.load('datos_procesados/vali/vali_data_y.pkl')
+    vali_data_qids = joblib.load('datos_procesados/vali/vali_data_qids.pkl')
+    return vali_data_X, vali_data_y, vali_data_qids
 
+def cargar_datos_train_pairwise():
+    train_data_X = joblib.load('datos_procesados/train_pairwise/train_pairwise_X.pkl')
+    train_data_y = joblib.load('datos_procesados/train_pairwise/train_pairwise_y.pkl')
     return train_data_X, train_data_y
 
-def pointwise_model(train_data_X, train_data_y):
-    """
-    Entrena un modelo de regresión lineal utilizando los datos de entrenamiento.
-    """
+def cargar_datos_vali_pairwise():
+    vali_data_X = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_X.pkl')
+    vali_data_y = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_y.pkl')
+    vali_data_qids = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_qids.pkl')
+    return vali_data_X, vali_data_y, vali_data_qids
+
+# FUNCIONES PARA CREAR MODELOS
+
+def crear_pointwise_model(train_data_X, train_data_y):
+    # Entrena un modelo de regresión lineal utilizando los datos de entrenamiento.
+    os.makedirs('modelos', exist_ok=True)
     model = LinearRegression()
     model.fit(train_data_X, train_data_y)
     joblib.dump(model, 'modelos/modelo_pointwise.pkl')
 
-def pairwise_model(train_data_X, train_data_y):
-    #revisar pares de documentos del mismo query
-    return
+def crear_pairwise_model(train_data_X, train_data_y):
+    # Entrena un modelo SVM lineal con los datos de entrenamiento (pares)
+    os.makedirs('modelos', exist_ok=True)
+    model = svm.SVC(kernel='linear')
+    model.fit(train_data_X, train_data_y)
+    joblib.dump(model, 'modelos/modelo_pairwise.pkl')
 
-def listwise_model(train_data_X, train_data_y):
-    #revisar todos los documentos del mismo query
+def crear_listwise_model(train_data_X, train_data_y):
+    # 
     return
     
 
-def main():
+# FUNCIONES PARA ENFOQUES POINTWISE, PAIRWISE Y LISTWISE
+def pointwise():
+    # Cargar datos
+    train_data_X, train_data_y, _ = cargar_datos_train_originales()
+    # Crear y guardar el modelo
+    crear_pointwise_model(train_data_X, train_data_y)
+
+def pairwise():
+    # Cargar datos
+    x_train, y_train = cargar_datos_train_pairwise()
+    # Crear y guardar el modelo
+    crear_pairwise_model(x_train, y_train)
+
+def listwise():
+    #revisar todos los documentos del mismo query
+    train_data_X, train_data_y, train_data_qids = cargar_datos_train_originales()
+
+    # Contar la cantidad de documentos por query id, en el orden en que aparecen
+    _, indices, counts = np.unique(train_data_qids, return_index=True, return_counts=True)
+    q_group = counts[np.argsort(indices)]  # Ordenar para mantener el orden original de aparición
+
+
     return
-    # Ordenar datos
+
+# FUNCIONES PARA ORDENAMIENTO DE DATOS
+
+def main():
+    pointwise()
+    pairwise()
 
 if __name__ == '__main__':
     main()
