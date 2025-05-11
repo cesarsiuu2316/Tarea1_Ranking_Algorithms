@@ -9,7 +9,8 @@ import os
 def cargar_datos_train_originales():
     train_data_X = joblib.load('datos_procesados/train/train_data_X.pkl')
     train_data_y = joblib.load('datos_procesados/train/train_data_y.pkl')
-    return train_data_X, train_data_y
+    train_data_qids = joblib.load('datos_procesados/train/train_data_qids.pkl')
+    return train_data_X, train_data_y, train_data_qids
 
 def cargar_datos_vali_originales():
     vali_data_X = joblib.load('datos_procesados/vali/vali_data_X.pkl')
@@ -43,25 +44,41 @@ def crear_pairwise_model(train_data_X, train_data_y):
     model = svm.SVC(kernel='linear')
     model.fit(train_data_X, train_data_y)
     joblib.dump(model, 'modelos/modelo_pairwise.pkl')
-    
-def pairwise_model():
-    #revisar pares de documentos del mismo query
-    x_train, y_train = cargar_datos_train_pairwise()
-    crear_pairwise_model(x_train, y_train)
 
-def listwise_model(train_data_X, train_data_y):
-    #revisar todos los documentos del mismo query
+def crear_listwise_model(train_data_X, train_data_y):
+    # 
     return
+    
 
 # FUNCIONES PARA ENFOQUES POINTWISE, PAIRWISE Y LISTWISE
+def pointwise():
+    # Cargar datos
+    train_data_X, train_data_y, _ = cargar_datos_train_originales()
+    # Crear y guardar el modelo
+    crear_pointwise_model(train_data_X, train_data_y)
 
+def pairwise():
+    # Cargar datos
+    x_train, y_train = cargar_datos_train_pairwise()
+    # Crear y guardar el modelo
+    crear_pairwise_model(x_train, y_train)
+
+def listwise():
+    #revisar todos los documentos del mismo query
+    train_data_X, train_data_y, train_data_qids = cargar_datos_train_originales()
+
+    # Contar la cantidad de documentos por query id, en el orden en que aparecen
+    _, indices, counts = np.unique(train_data_qids, return_index=True, return_counts=True)
+    q_group = counts[np.argsort(indices)]  # Ordenar para mantener el orden original de aparición
+
+
+    return
 
 # FUNCIONES PARA ORDENAMIENTO DE DATOS
 
 def main():
-    pairwise_model()
-    return
-    # Ordenar datos
+    pointwise()
+    pairwise()
 
 if __name__ == '__main__':
     main()
