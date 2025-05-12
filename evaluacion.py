@@ -5,15 +5,15 @@ import numpy as np
 import xgboost as xgb
 
 def cargar_datos_vali_originales():
-    vali_data_X = joblib.load('datos_procesados/vali/vali_data_X.pkl')
-    vali_data_y = joblib.load('datos_procesados/vali/vali_data_y.pkl')
-    vali_data_qids = joblib.load('datos_procesados/vali/vali_data_qids.pkl')
+    vali_data_X = joblib.load('datos_procesados/vali/vali_data_X.joblib')
+    vali_data_y = joblib.load('datos_procesados/vali/vali_data_y.joblib')
+    vali_data_qids = joblib.load('datos_procesados/vali/vali_data_qids.joblib')
     return vali_data_X, vali_data_y, vali_data_qids
 
 def cargar_datos_vali_pairwise():
-    vali_data_X = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_X.pkl')
-    vali_data_y = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_y.pkl')
-    vali_data_qids = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_qids.pkl')
+    vali_data_X = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_X.joblib')
+    vali_data_y = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_y.joblib')
+    vali_data_qids = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_qids.joblib')
     return vali_data_X, vali_data_y, vali_data_qids
 
 def mean_absolute_precision(y_ordenado, qids):
@@ -103,7 +103,7 @@ def ordenar_documentos_por_qid_y_score(vali_data_X, vali_data_y, qids, prediccio
 def evaluacion_pointwise():
     # Cargar los datos de validación
     vali_data_X, vali_data_y, vali_data_qids = cargar_datos_vali_originales()
-    modelo_pointwise = joblib.load('modelos/modelo_pointwise.pkl')
+    modelo_pointwise = joblib.load('modelos/modelo_pointwise.joblib')
 
     # Realizar predicciones
     predicciones = modelo_pointwise.predict(vali_data_X)
@@ -122,7 +122,7 @@ def evaluacion_pointwise():
 def evaluacion_pairwise():
     # Cargar los datos de validación
     vali_data_X, vali_data_y, vali_data_qids = cargar_datos_vali_pairwise()
-    modelo_pairwise = joblib.load('modelos/modelo_pairwise.pkl')
+    modelo_pairwise = joblib.load('modelos/modelo_pairwise.joblib')
     # Realizar predicciones
     predicciones = modelo_pairwise.predict(vali_data_X)
     # Ordenar las predicciones
@@ -146,7 +146,7 @@ def evaluacion_pairwise():
 def evaluacion_listwise():
     # Cargar los datos de validación
     vali_data_X, vali_data_y, vali_data_qids = cargar_datos_vali_originales()
-    modelo_listwise = joblib.load('modelos/modelo_listwise.pkl')
+    modelo_listwise = joblib.load('modelos/modelo_listwise.joblib')
 
 
     predicciones = modelo_listwise.predict(xgb.DMatrix(vali_data_X))
