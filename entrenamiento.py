@@ -74,7 +74,7 @@ def listwise():
 
 def main():
     pointwise()
-    pairwise()
+    #pairwise()
     listwise()
 
 if __name__ == '__main__':
