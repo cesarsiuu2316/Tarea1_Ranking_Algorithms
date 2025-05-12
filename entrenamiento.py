@@ -12,22 +12,10 @@ def cargar_datos_train_originales():
     train_data_qids = joblib.load('datos_procesados/train/train_data_qids.pkl')
     return train_data_X, train_data_y, train_data_qids
 
-def cargar_datos_vali_originales():
-    vali_data_X = joblib.load('datos_procesados/vali/vali_data_X.pkl')
-    vali_data_y = joblib.load('datos_procesados/vali/vali_data_y.pkl')
-    vali_data_qids = joblib.load('datos_procesados/vali/vali_data_qids.pkl')
-    return vali_data_X, vali_data_y, vali_data_qids
-
 def cargar_datos_train_pairwise():
     train_data_X = joblib.load('datos_procesados/train_pairwise/train_pairwise_X.pkl')
     train_data_y = joblib.load('datos_procesados/train_pairwise/train_pairwise_y.pkl')
     return train_data_X, train_data_y
-
-def cargar_datos_vali_pairwise():
-    vali_data_X = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_X.pkl')
-    vali_data_y = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_y.pkl')
-    vali_data_qids = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_qids.pkl')
-    return vali_data_X, vali_data_y, vali_data_qids
 
 # FUNCIONES PARA CREAR MODELOS
 def crear_pointwise_model(train_data_X, train_data_y):
