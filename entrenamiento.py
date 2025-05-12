@@ -3,34 +3,21 @@ import joblib
 from sklearn import svm
 import numpy as np
 import os
+import xgboost as xgb
 
 # FUNCIONES PARA CARGAR DATASETS PREPROCESADOS
-
 def cargar_datos_train_originales():
     train_data_X = joblib.load('datos_procesados/train/train_data_X.pkl')
     train_data_y = joblib.load('datos_procesados/train/train_data_y.pkl')
     train_data_qids = joblib.load('datos_procesados/train/train_data_qids.pkl')
     return train_data_X, train_data_y, train_data_qids
 
-def cargar_datos_vali_originales():
-    vali_data_X = joblib.load('datos_procesados/vali/vali_data_X.pkl')
-    vali_data_y = joblib.load('datos_procesados/vali/vali_data_y.pkl')
-    vali_data_qids = joblib.load('datos_procesados/vali/vali_data_qids.pkl')
-    return vali_data_X, vali_data_y, vali_data_qids
-
 def cargar_datos_train_pairwise():
     train_data_X = joblib.load('datos_procesados/train_pairwise/train_pairwise_X.pkl')
     train_data_y = joblib.load('datos_procesados/train_pairwise/train_pairwise_y.pkl')
     return train_data_X, train_data_y
 
-def cargar_datos_vali_pairwise():
-    vali_data_X = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_X.pkl')
-    vali_data_y = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_y.pkl')
-    vali_data_qids = joblib.load('datos_procesados/vali_pairwise/vali_pairwise_qids.pkl')
-    return vali_data_X, vali_data_y, vali_data_qids
-
 # FUNCIONES PARA CREAR MODELOS
-
 def crear_pointwise_model(train_data_X, train_data_y):
     # Entrena un modelo de regresión lineal utilizando los datos de entrenamiento.
     os.makedirs('modelos', exist_ok=True)
@@ -45,10 +32,21 @@ def crear_pairwise_model(train_data_X, train_data_y):
     model.fit(train_data_X, train_data_y)
     joblib.dump(model, 'modelos/modelo_pairwise.pkl')
 
-def crear_listwise_model(train_data_X, train_data_y):
-    # 
-    return
-    
+def crear_listwise_model(train_data_X, train_data_y, q_group):
+    # Entrena un modelo XGBoost utilizando el enfoque Listwise
+    os.makedirs('modelos', exist_ok=True)
+    # Convertir a formato DMatrix
+    dtrain = xgb.DMatrix(train_data_X, label=train_data_y)
+    dtrain.set_group(q_group)
+    # Parámetros de ranking con NDGC
+    params = {
+        'objective': 'rank:ndcg',
+        'eval_metric': 'ndcg'
+    }
+    # Entrenamiento del modelo con xgboost
+    model = xgb.train(params, dtrain, num_boost_round=100)
+    # 6. Guardar el modelo con joblib
+    joblib.dump(model, 'modelos/modelo_listwise.pkl')
 
 # FUNCIONES PARA ENFOQUES POINTWISE, PAIRWISE Y LISTWISE
 def pointwise():
@@ -66,19 +64,18 @@ def pairwise():
 def listwise():
     #revisar todos los documentos del mismo query
     train_data_X, train_data_y, train_data_qids = cargar_datos_train_originales()
-
     # Contar la cantidad de documentos por query id, en el orden en que aparecen
     _, indices, counts = np.unique(train_data_qids, return_index=True, return_counts=True)
     q_group = counts[np.argsort(indices)]  # Ordenar para mantener el orden original de aparición
-
-
-    return
+    # Crear y guardar el modelo 
+    crear_listwise_model(train_data_X, train_data_y, q_group)
 
 # FUNCIONES PARA ORDENAMIENTO DE DATOS
 
 def main():
     pointwise()
-    pairwise()
+    #pairwise()
+    listwise()
 
 if __name__ == '__main__':
     main()
