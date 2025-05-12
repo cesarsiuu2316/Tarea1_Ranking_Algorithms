@@ -72,20 +72,20 @@ def cargar_estandarizar_y_guardar_datasets():
     train_data_X = scaler.fit_transform(train_data_X)
     test_data_X = scaler.transform(test_data_X)
     vali_data_X = scaler.transform(vali_data_X)
-    joblib.dump(scaler, 'datos_procesados/scaler.pkl')
+    joblib.dump(scaler, 'datos_procesados/scaler.joblib')
 
     # Guardar los datos de entrenamiento
-    joblib.dump(train_data_X, 'datos_procesados/train/train_data_X.pkl')
-    joblib.dump(train_data_y, 'datos_procesados/train/train_data_y.pkl')
-    joblib.dump(train_data_qids, 'datos_procesados/train/train_data_qids.pkl')
+    joblib.dump(train_data_X, 'datos_procesados/train/train_data_X.joblib')
+    joblib.dump(train_data_y, 'datos_procesados/train/train_data_y.joblib')
+    joblib.dump(train_data_qids, 'datos_procesados/train/train_data_qids.joblib')
     # Guardar los datos de prueba
-    joblib.dump(test_data_X, 'datos_procesados/test/test_data_X.pkl')
-    joblib.dump(test_data_y, 'datos_procesados/test/test_data_y.pkl')
-    joblib.dump(test_data_qids, 'datos_procesados/test/test_data_qids.pkl')
+    joblib.dump(test_data_X, 'datos_procesados/test/test_data_X.joblib')
+    joblib.dump(test_data_y, 'datos_procesados/test/test_data_y.joblib')
+    joblib.dump(test_data_qids, 'datos_procesados/test/test_data_qids.joblib')
     # Guardar los datos de validacion
-    joblib.dump(vali_data_X, 'datos_procesados/vali/vali_data_X.pkl')
-    joblib.dump(vali_data_y, 'datos_procesados/vali/vali_data_y.pkl')         
-    joblib.dump(vali_data_qids, 'datos_procesados/vali/vali_data_qids.pkl')
+    joblib.dump(vali_data_X, 'datos_procesados/vali/vali_data_X.joblib')
+    joblib.dump(vali_data_y, 'datos_procesados/vali/vali_data_y.joblib')         
+    joblib.dump(vali_data_qids, 'datos_procesados/vali/vali_data_qids.joblib')
 
     # 🆕 Generar y guardar datasets Pairwise para cada conjunto
     pairwise_train_X, pairwise_train_y, pairwise_train_qids = generar_dataset_pairwise(train_data_X, train_data_y, train_data_qids)
@@ -93,17 +93,17 @@ def cargar_estandarizar_y_guardar_datasets():
     pairwise_test_X, pairwise_test_y, pairwise_test_qids = generar_dataset_pairwise(test_data_X, test_data_y, test_data_qids)
 
     # Guardar datasets pairwise
-    joblib.dump(pairwise_train_X, 'datos_procesados/train_pairwise/train_pairwise_X.pkl')
-    joblib.dump(pairwise_train_y, 'datos_procesados/train_pairwise/train_pairwise_y.pkl')
-    joblib.dump(pairwise_train_qids, 'datos_procesados/train_pairwise/train_pairwise_qids.pkl')
+    joblib.dump(pairwise_train_X, 'datos_procesados/train_pairwise/train_pairwise_X.joblib')
+    joblib.dump(pairwise_train_y, 'datos_procesados/train_pairwise/train_pairwise_y.joblib')
+    joblib.dump(pairwise_train_qids, 'datos_procesados/train_pairwise/train_pairwise_qids.joblib')
 
-    joblib.dump(pairwise_vali_X, 'datos_procesados/vali_pairwise/vali_pairwise_X.pkl')
-    joblib.dump(pairwise_vali_y, 'datos_procesados/vali_pairwise/vali_pairwise_y.pkl')
-    joblib.dump(pairwise_vali_qids, 'datos_procesados/vali_pairwise/vali_pairwise_qids.pkl')
+    joblib.dump(pairwise_vali_X, 'datos_procesados/vali_pairwise/vali_pairwise_X.joblib')
+    joblib.dump(pairwise_vali_y, 'datos_procesados/vali_pairwise/vali_pairwise_y.joblib')
+    joblib.dump(pairwise_vali_qids, 'datos_procesados/vali_pairwise/vali_pairwise_qids.joblib')
 
-    joblib.dump(pairwise_test_X, 'datos_procesados/test_pairwise/test_pairwise_X.pkl')
-    joblib.dump(pairwise_test_y, 'datos_procesados/test_pairwise/test_pairwise_y.pkl')
-    joblib.dump(pairwise_test_qids, 'datos_procesados/test_pairwise/test_pairwise_qids.pkl')
+    joblib.dump(pairwise_test_X, 'datos_procesados/test_pairwise/test_pairwise_X.joblib')
+    joblib.dump(pairwise_test_y, 'datos_procesados/test_pairwise/test_pairwise_y.joblib')
+    joblib.dump(pairwise_test_qids, 'datos_procesados/test_pairwise/test_pairwise_qids.joblib')
 
 
 def main():

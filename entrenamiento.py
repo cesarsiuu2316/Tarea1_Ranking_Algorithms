@@ -1,20 +1,20 @@
+from sklearn.svm import LinearSVC
 from sklearn.linear_model import LinearRegression
 import joblib
-from sklearn import svm
 import numpy as np
 import os
 import xgboost as xgb
 
 # FUNCIONES PARA CARGAR DATASETS PREPROCESADOS
 def cargar_datos_train_originales():
-    train_data_X = joblib.load('datos_procesados/train/train_data_X.pkl')
-    train_data_y = joblib.load('datos_procesados/train/train_data_y.pkl')
-    train_data_qids = joblib.load('datos_procesados/train/train_data_qids.pkl')
+    train_data_X = joblib.load('datos_procesados/train/train_data_X.joblib')
+    train_data_y = joblib.load('datos_procesados/train/train_data_y.joblib')
+    train_data_qids = joblib.load('datos_procesados/train/train_data_qids.joblib')
     return train_data_X, train_data_y, train_data_qids
 
 def cargar_datos_train_pairwise():
-    train_data_X = joblib.load('datos_procesados/train_pairwise/train_pairwise_X.pkl')
-    train_data_y = joblib.load('datos_procesados/train_pairwise/train_pairwise_y.pkl')
+    train_data_X = joblib.load('datos_procesados/train_pairwise/train_pairwise_X.joblib')
+    train_data_y = joblib.load('datos_procesados/train_pairwise/train_pairwise_y.joblib')
     return train_data_X, train_data_y
 
 # FUNCIONES PARA CREAR MODELOS
@@ -23,14 +23,14 @@ def crear_pointwise_model(train_data_X, train_data_y):
     os.makedirs('modelos', exist_ok=True)
     model = LinearRegression()
     model.fit(train_data_X, train_data_y)
-    joblib.dump(model, 'modelos/modelo_pointwise.pkl')
+    joblib.dump(model, 'modelos/modelo_pointwise.joblib')
 
 def crear_pairwise_model(train_data_X, train_data_y):
     # Entrena un modelo SVM lineal con los datos de entrenamiento (pares)
     os.makedirs('modelos', exist_ok=True)
-    model = svm.SVC(kernel='linear')
+    model = LinearSVC(loss='hinge', max_iter=1000)
     model.fit(train_data_X, train_data_y)
-    joblib.dump(model, 'modelos/modelo_pairwise.pkl')
+    joblib.dump(model, 'modelos/modelo_pairwise.joblib')
 
 def crear_listwise_model(train_data_X, train_data_y, q_group):
     # Entrena un modelo XGBoost utilizando el enfoque Listwise
@@ -46,7 +46,7 @@ def crear_listwise_model(train_data_X, train_data_y, q_group):
     # Entrenamiento del modelo con xgboost
     model = xgb.train(params, dtrain, num_boost_round=100)
     # 6. Guardar el modelo con joblib
-    joblib.dump(model, 'modelos/modelo_listwise.pkl')
+    joblib.dump(model, 'modelos/modelo_listwise.joblib')
 
 # FUNCIONES PARA ENFOQUES POINTWISE, PAIRWISE Y LISTWISE
 def pointwise():
@@ -74,7 +74,7 @@ def listwise():
 
 def main():
     pointwise()
-    #pairwise()
+    pairwise()
     listwise()
 
 if __name__ == '__main__':
