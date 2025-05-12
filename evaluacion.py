@@ -1,6 +1,8 @@
 from collections import defaultdict
+from sklearn.metrics import ndcg_score
 import joblib
 import numpy as np
+import xgboost as xgb
 
 def cargar_datos_vali_originales():
     vali_data_X = joblib.load('datos_procesados/vali/vali_data_X.pkl')
@@ -42,8 +44,26 @@ def mean_absolute_precision(y_ordenado, qids):
     precision_media_absoluta /= count_queries
     return precision_media_absoluta
 
-def normalized_discounted_cumulative_gain(y_true, y_pred):
-    pass
+def normalized_discounted_cumulative_gain(vali_data_y, predicciones, qids, k):
+    # Agrupar documentos por query (qid)
+    query_to_indices = defaultdict(list)
+    for idx, qid in enumerate(qids):
+        query_to_indices[qid].append(idx)
+
+    ndcg_total = 0
+    num_valid_queries = 0
+
+    for qid, indices in query_to_indices.items():
+        if len(indices) >= k:
+            y_true_q = [vali_data_y[idx] for idx in indices]
+            y_pred_q = [predicciones[idx] for idx in indices]
+
+            # sklearn expects shape (1, n_samples) for each list
+            ndcg = ndcg_score([y_true_q], [y_pred_q], k=k)
+            ndcg_total += ndcg
+            num_valid_queries += 1
+
+    return ndcg_total / num_valid_queries    
 
 def ordenar_documentos_por_qid_y_score(vali_data_X, vali_data_y, qids, predicciones):
     # Crear un arreglo para los documentos ordenados por cada qid
@@ -78,12 +98,13 @@ def ordenar_documentos_por_qid_y_score(vali_data_X, vali_data_y, qids, prediccio
     qids_ordenado = np.hstack(qids_ordenado)  # Unir todos los qids
     
     return X_ordenado, y_ordenado, qids_ordenado
-    
+
 
 def evaluacion_pointwise():
     # Cargar los datos de validación
     vali_data_X, vali_data_y, vali_data_qids = cargar_datos_vali_originales()
     modelo_pointwise = joblib.load('modelos/modelo_pointwise.pkl')
+
     # Realizar predicciones
     predicciones = modelo_pointwise.predict(vali_data_X)
     # Ordenar las predicciones
@@ -91,22 +112,64 @@ def evaluacion_pointwise():
     # Calcular métricas de evaluación
     mean_absolute_precision_ = mean_absolute_precision(y_ordenado, qids_ordenado)
     print(f"MAP: {mean_absolute_precision_}")
-    #print(f"NDCG: {ndcg}")
+    # NDCG@3
+    ndcg = normalized_discounted_cumulative_gain(vali_data_y, predicciones, vali_data_qids, k=5)
+    print("NDCG@5:", ndcg)
+    # NDCG@5
+    ndcg = normalized_discounted_cumulative_gain(vali_data_y, predicciones, vali_data_qids, k=10)
+    print("NDCG@10:", ndcg)
 
 def evaluacion_pairwise():
     # Cargar los datos de validación
     vali_data_X, vali_data_y, vali_data_qids = cargar_datos_vali_pairwise()
     modelo_pairwise = joblib.load('modelos/modelo_pairwise.pkl')
+    # Realizar predicciones
+    predicciones = modelo_pairwise.predict(vali_data_X)
+    # Ordenar las predicciones
+    X_ordenado, y_ordenado, qids_ordenado = ordenar_documentos_por_qid_y_score(vali_data_X, vali_data_y, vali_data_qids, predicciones)
+    # Calcular métricas de evaluación
+    mean_absolute_precision_ = mean_absolute_precision(y_ordenado, qids_ordenado)
+    print(f"MAP: {mean_absolute_precision_}")
+
+    for i in range(len(vali_data_y)):
+        if vali_data_y[i] == -1:
+            vali_data_y[i] = 0
+        if predicciones[i] == -1:
+            predicciones[i] = 0
+    # NDCG@3
+    ndcg = normalized_discounted_cumulative_gain(vali_data_y, predicciones, vali_data_qids, k=5)
+    print("NDCG@5:", ndcg)
+    # NDCG@5
+    ndcg = normalized_discounted_cumulative_gain(vali_data_y, predicciones, vali_data_qids, k=10)
+    print("NDCG@10:", ndcg)
 
 def evaluacion_listwise():
     # Cargar los datos de validación
     vali_data_X, vali_data_y, vali_data_qids = cargar_datos_vali_originales()
     modelo_listwise = joblib.load('modelos/modelo_listwise.pkl')
 
+
+    predicciones = modelo_listwise.predict(xgb.DMatrix(vali_data_X))
+    # Ordenar las predicciones
+    X_ordenado, y_ordenado, qids_ordenado = ordenar_documentos_por_qid_y_score(vali_data_X, vali_data_y, vali_data_qids, predicciones)
+    # Calcular métricas de evaluación
+    mean_absolute_precision_ = mean_absolute_precision(y_ordenado, qids_ordenado)
+    print(f"MAP: {mean_absolute_precision_}")
+    # NDCG@3
+    ndcg = normalized_discounted_cumulative_gain(vali_data_y, predicciones, vali_data_qids, k=5)
+    print("NDCG@5:", ndcg)
+    # NDCG@5
+    ndcg = normalized_discounted_cumulative_gain(vali_data_y, predicciones, vali_data_qids, k=10)
+    print("NDCG@10:", ndcg)
+
 def main():
+    print("Evaluación de modelos:")
+    print("Pointwise:")
     evaluacion_pointwise()
-    #evaluacion_pairwise()
-    #evaluacion_listwise()
+    print("\nPairwise:")
+    evaluacion_pairwise()
+    print("\nListwise:")    
+    evaluacion_listwise()
 
 if __name__ == '__main__':
     main()
