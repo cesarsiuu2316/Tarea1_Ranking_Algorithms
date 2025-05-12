@@ -1,6 +1,6 @@
+from sklearn.svm import LinearSVC
 from sklearn.linear_model import LinearRegression
 import joblib
-from sklearn import svm
 import numpy as np
 import os
 import xgboost as xgb
@@ -28,7 +28,7 @@ def crear_pointwise_model(train_data_X, train_data_y):
 def crear_pairwise_model(train_data_X, train_data_y):
     # Entrena un modelo SVM lineal con los datos de entrenamiento (pares)
     os.makedirs('modelos', exist_ok=True)
-    model = svm.SVC(kernel='linear')
+    model = LinearSVC(loss='hinge', max_iter=1000)
     model.fit(train_data_X, train_data_y)
     joblib.dump(model, 'modelos/modelo_pairwise.joblib')
 
@@ -74,7 +74,7 @@ def listwise():
 
 def main():
     pointwise()
-    #pairwise()
+    pairwise()
     listwise()
 
 if __name__ == '__main__':
